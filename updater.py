@@ -90,3 +90,6 @@ def update():
         log_file.write('\n'.join(log))
     # open the main.py
     os.startfile('main.py')
+
+if __name__ == "__main__":
+    update()
