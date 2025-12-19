@@ -86,7 +86,7 @@ def update():
         os.remove('main.zip')
         _log("deleted!\nupdated successfully!")
 
-    _log("log available in update_log.txt\nexit.")
+    _log("log available in update_log.txt\nexit from updater.py\nstarting main.py...")
     with open('update_log.txt', 'w', encoding='utf-8') as log_file:
         log_file.write('\n'.join(log))
     
