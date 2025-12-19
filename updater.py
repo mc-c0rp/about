@@ -14,8 +14,9 @@ error_codes = {
 
 def _log(message: str):
     global log
-    log.append(f"[updater.py] - [{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}]: {message}")
-    print(f"[updater.py]: {message}")
+    for msg in message.split('\n'):
+        log.append(f"[updater.py] - [{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}]: {msg}")
+        print(f"[updater.py]: {msg}")
 
 
 # check and download archive from github
