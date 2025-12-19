@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin // Editor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
+    <style>
+        :root {
+            --font-family-mono: 'Source Code Pro', monospace;
+            --bg-page: #F7F7F7;
+            --bg-sidebar: #EEEEEE;
+            --bg-card: #FFFFFF;
+            --text-primary: #111111;
+            --text-secondary: #777777;
+            --border-color: #DDDDDD;
+            --accent-color: #333333;
+            --success-color: #28a745;
+            --warning-color: #ff9800;
+            --danger-color: #dc3545;
+            --chip-bg: #e0e0e0;
+            --chip-border: #cccccc;
+            --border-radius: 8px;
+            --modal-overlay: rgba(0, 0, 0, 0.5);
+            --dropzone-bg: #f9f9f9;
+            --scrollbar-track: #e0e0e0;
+            --scrollbar-thumb: #b0b0b0;
+            --selection-bg: #d8d8d8;
+            --selection-text: #000000;
+        }
+
+        .dark-theme {
+            --bg-page: #1F1F1F;
+            --bg-sidebar: #252525;
+            --bg-card: #2B2B2B;
+            --text-primary: #F0F0F0;
+            --text-secondary: #888888;
+            --border-color: #3C3C3C;
+            --accent-color: #D8D8D8;
+            --chip-bg: #444444;
+            --chip-border: #555555;
+            --modal-overlay: rgba(0, 0, 0, 0.8);
+            --dropzone-bg: #2a2a2a;
+            --scrollbar-track: #252525;
+            --scrollbar-thumb: #444444;
+            --selection-bg: #555555;
+            --selection-text: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        ::selection {
+            background-color: var(--selection-bg);
+            color: var(--selection-text);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--scrollbar-track);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--scrollbar-thumb);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-color);
+        }
+
+        body {
+            font-family: var(--font-family-mono);
+            margin: 0;
+            background-color: var(--bg-page);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        aside {
+            width: 300px;
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .new-btn {
+            background: var(--text-primary);
+            color: var(--bg-page);
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: inherit;
+        }
+
+        .list-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .list-item {
+            padding: 12px;
+            margin-bottom: 5px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: 0.2s;
+            position: relative;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .list-item:hover {
+            background-color: var(--bg-card);
+            border-color: var(--border-color);
+        }
+
+        .list-item.active {
+            background-color: var(--bg-card);
+            border-color: var(--accent-color);
+            font-weight: 600;
+        }
+
+        main {
+            flex: 1;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .editor-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .editor-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-shrink: 0;
+        }
+
+        .editor-title {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .status-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .status-text {
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: opacity 0.3s ease, filter 0.3s ease;
+        }
+
+        .status-text.changing {
+            opacity: 0;
+            filter: blur(4px);
+        }
+
+        .status-gray {
+            color: var(--text-secondary);
+        }
+
+        .status-warn {
+            color: var(--warning-color);
+        }
+
+        .btn-preview-toggle {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-left: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+            font-family: inherit;
+        }
+
+        .btn-preview-toggle:hover,
+        .btn-preview-toggle.active {
+            border-color: var(--accent-color);
+            background: var(--bg-sidebar);
+        }
+
+        /* --- Стили Формы --- */
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-shrink: 0;
+            width: 100%;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .col-fixed {
+            flex: 0 0 250px;
+            max-width: 250px;
+        }
+
+        .col-fluid {
+            flex: 1;
+            min-width: 0; 
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 16px;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .lang-switch-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-shrink: 0;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+
+        .lang-btn {
+            flex: 1;
+            padding: 10px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            cursor: pointer;
+            font-family: inherit;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .lang-btn.active {
+            background: var(--text-primary);
+            color: var(--bg-page);
+            border-color: var(--text-primary);
+        }
+
+        .toolbar-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            background: var(--bg-page);
+            padding-bottom: 10px;
+            margin-top: 10px;
+            flex-shrink: 0;
+            gap: 10px;
+        }
+
+        .toolbar-left {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .toolbar-right {
+            display: flex;
+            gap: 10px;
+        }
+
+        .tool-btn {
+            padding: 6px 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: 0.2s;
+            font-family: inherit;
+        }
+
+        .tool-btn:hover {
+            border-color: var(--accent-color);
+            transform: translateY(-1px);
+        }
+
+        .btn-save {
+            background-color: var(--text-primary);
+            color: var(--bg-page);
+            border: 1px solid var(--text-primary);
+        }
+
+        .btn-delete {
+            background-color: transparent;
+            color: var(--danger-color);
+            border: 1px solid var(--danger-color);
+        }
+
+        .btn-delete:hover {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .split-wrapper {
+            display: flex;
+            gap: 0;
+            transition: gap 0.4s;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .editor-pane {
+            flex: 1;
+            transition: flex 0.4s;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .rich-editor {
+            flex: 1;
+            padding: 30px;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            color: var(--text-primary);
+            font-family: var(--font-family-mono);
+            font-size: 16px;
+            line-height: 1.6;
+            outline: none;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            max-width: 100%;
+        }
+
+        .preview-pane {
+            width: 0;
+            opacity: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: var(--bg-card);
+            border-left: 1px solid var(--border-color);
+            transition: width 0.4s, opacity 0.3s;
+            border-radius: 0 var(--border-radius) var(--border-radius) 0;
+            padding: 0;
+        }
+
+        .split-wrapper.preview-active {
+            gap: 20px;
+        }
+
+        .split-wrapper.preview-active .preview-pane {
+            width: 50%;
+            opacity: 1;
+            padding: 25px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Chips */
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            background-color: var(--chip-bg);
+            border: 1px solid var(--chip-border);
+            border-radius: 4px;
+            padding: 2px 8px;
+            margin: 0 4px;
+            font-size: 14px;
+            color: var(--text-primary);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .chip:hover {
+            border-color: var(--text-primary);
+        }
+
+        .chip-icon::before { content: "⭐"; margin-right: 5px; }
+        .chip-img::before { content: "🖼️"; margin-right: 5px; }
+        .chip-bold { font-weight: bold; background-color: var(--border-color); }
+        .chip-bold::before { content: "B"; margin-right: 5px; font-weight: 900; }
+        .chip-strike { text-decoration: line-through; opacity: 0.7; }
+        .chip-strike::before { content: "S"; margin-right: 5px; text-decoration: none; }
+        .chip-line { text-decoration: underline; }
+        .chip-line::before { content: "U"; margin-right: 5px; text-decoration: none; }
+        .chip-color::before { content: "🎨"; margin-right: 5px; }
+        .chip-popup { border-color: #9c27b0; color: #9c27b0; }
+        .chip-popup::before { content: "🗯️"; margin-right: 5px; }
+        .chip-link { color: #007bff; border-color: #007bff; }
+        .chip-link::before { content: "🔗"; margin-right: 5px; }
+        .chip-to { color: #28a745; border-color: #28a745; }
+        .chip-to::before { content: "➡"; margin-right: 5px; }
+
+        /* Modals */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--modal-overlay); backdrop-filter: blur(3px);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000; opacity: 0; visibility: hidden; transition: 0.3s;
+        }
+
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+
+        .modal-content {
+            background: var(--bg-card); padding: 25px; border-radius: var(--border-radius);
+            border: 1px solid var(--border-color); width: 800px; max-width: 95%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); transform: scale(0.95);
+            transition: 0.3s; display: flex; flex-direction: column; max-height: 90vh;
+        }
+
+        .modal-overlay.active .modal-content { transform: scale(1); }
+        .modal-title { margin: 0 0 20px 0; font-size: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+        .modal-body { display: flex; gap: 25px; flex: 1; min-height: 0; overflow: hidden; }
+        .modal-left { flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding-right: 5px; }
+        .modal-right { width: 300px; display: flex; flex-direction: column; border-left: 1px solid var(--border-color); padding-left: 20px; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px; }
+
+        .drop-zone {
+            margin-top: 10px; width: 100%; height: 120px; border: 2px dashed var(--border-color);
+            border-radius: var(--border-radius); background-color: var(--dropzone-bg);
+            display: flex; justify-content: center; align-items: center; text-align: center;
+            color: var(--text-secondary); cursor: pointer; transition: 0.2s;
+            position: relative; flex-direction: column; gap: 10px;
+        }
+        .drop-zone:hover { border-color: var(--accent-color); color: var(--text-primary); }
+        .drop-zone input { position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+        .preview-box {
+            width: 100%; height: 250px; background: var(--dropzone-bg); border: 1px solid var(--border-color);
+            border-radius: var(--border-radius); display: flex; align-items: center; justify-content: center;
+            overflow: hidden; margin-top: 10px;
+        }
+        .preview-img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+        /* Library */
+        #libraryModal { z-index: 1100; }
+        .library-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; overflow-y: auto; padding: 5px; }
+        .library-item {
+            aspect-ratio: 1; border: 1px solid var(--border-color); border-radius: 6px;
+            background: var(--bg-card); display: flex; flex-direction: column;
+            align-items: center; justify-content: center; cursor: pointer; padding: 5px; transition: 0.2s;
+        }
+        .library-item:hover { background-color: var(--accent-color); color: var(--bg-page); }
+        .library-item img { max-width: 100%; max-height: 70%; object-fit: contain; pointer-events: none; }
+        .library-item span {
+            font-size: 10px; margin-top: 5px; overflow: hidden; white-space: nowrap;
+            text-overflow: ellipsis; width: 100%; text-align: center;
+        }
+
+        .preview-content { list-style: none; padding: 0; margin: 0; }
+        .preview-content li { margin-bottom: 15px; line-height: 1.8; color: var(--text-secondary); }
+        .inline-icon { width: 20px; vertical-align: middle; margin: 0 4px; }
+        .custom-link { color: #4da3ff; border-bottom: 1px dashed #4da3ff; text-decoration: none; }
+        .hidden { display: none !important; }
+        #notification {
+            position: fixed; bottom: 20px; right: 20px; padding: 15px 25px;
+            background-color: var(--success-color); color: white; border-radius: var(--border-radius);
+            transform: translateY(100px); transition: 0.3s; z-index: 2000;
+        }
+        #notification.show { transform: translateY(0); }
+    </style>
+</head>
+
+<body class="dark-theme">
+
+    <aside>
+        <div class="sidebar-header">
+            <span>FAQ EDITOR</span>
+            <button class="new-btn" onclick="createNew()">+ NEW</button>
+        </div>
+        <div class="list-container" id="list-container"></div>
+    </aside>
+
+    <main>
+        <div class="editor-container">
+            <div class="editor-header-row">
+                <h2 class="editor-title">Редактор</h2>
+                <div class="status-container">
+                    <span id="saveStatus" class="status-text status-gray">Сохранено</span>
+                    <button class="btn-preview-toggle" onclick="openTranslationModal()">Prompt перевод</button>
+                    <button class="btn-preview-toggle" onclick="togglePreview()" id="btnPreviewToggle">👁️ Предпросмотр</button>
+                </div>
+            </div>
+
+            <div class="lang-switch-container">
+                <button class="lang-btn active" onclick="switchLang('ru')" id="btn-lang-ru">RU (Main)</button>
+                <button class="lang-btn" onclick="switchLang('en')" id="btn-lang-en">EN</button>
+                <button class="lang-btn" onclick="switchLang('ro')" id="btn-lang-ro">RO</button>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-fixed">
+                    <label>ID</label>
+                    <input type="text" id="inp-id" placeholder="how-to-pay">
+                </div>
+                <div class="form-group col-fluid">
+                    <label>Заголовок (<span id="lbl-lang">RU</span>)</label>
+                    <input type="text" id="inp-title" placeholder="Заголовок статьи...">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Теги (общие, через запятую)</label>
+                <input type="text" id="inp-tags" placeholder="оплата, банки, ...">
+            </div>
+
+            <div class="toolbar-row">
+                <div class="toolbar-left">
+                    <button class="tool-btn" onclick="openInsertModal('bold')"><b>B</b> Bold</button>
+                    <button class="tool-btn" onclick="openInsertModal('strike')"><s>S</s> Strike</button>
+                    <button class="tool-btn" onclick="openInsertModal('line')"><u>U</u> Line</button>
+                    <button class="tool-btn" onclick="openInsertModal('color')">🎨 Color</button>
+                    <div style="width: 1px; height: 20px; background: var(--border-color); margin: 0 5px;"></div>
+                    <button class="tool-btn" onclick="openInsertModal('icon')">⭐ Icon</button>
+                    <button class="tool-btn" onclick="openInsertModal('img')">🖼️ Img</button>
+                    <button class="tool-btn" onclick="openInsertModal('link')">🔗 Link</button>
+                    <button class="tool-btn" onclick="openInsertModal('to')">➡ To</button>
+                    <button class="tool-btn" onclick="openInsertModal('popup')">🗯️ Popup</button>
+                </div>
+                <div class="toolbar-right">
+                    <button class="tool-btn btn-delete" onclick="deleteData()">Удалить</button>
+                    <button class="tool-btn btn-save" onclick="saveData()">Сохранить</button>
+                </div>
+            </div>
+
+            <div class="split-wrapper" id="splitWrapper">
+                <div class="editor-pane">
+                    <div id="rich-editor" class="rich-editor" contenteditable="true" placeholder="Пишите текст здесь..."></div>
+                </div>
+                <div class="preview-pane">
+                    <h3 style="margin-top: 0; padding: 20px; border-bottom: 1px solid var(--border-color);">Предпросмотр</h3>
+                    <ul class="preview-content" id="livePreview" style="padding: 20px;"></ul>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="elementModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 class="modal-title" id="modalTitle">Добавить элемент</h3>
+            <div class="modal-body">
+                <div class="modal-left">
+                    <div class="form-group">
+                        <label>Тип</label>
+                        <select id="modalType" onchange="toggleModalFields()">
+                            <option value="bold">Жирный текст</option>
+                            <option value="strike">Зачеркнутый</option>
+                            <option value="line">Подчеркнутый</option>
+                            <option value="color">Цветной текст</option>
+                            <option value="icon">Иконка (!/icon)</option>
+                            <option value="img">Картинка (!/img)</option>
+                            <option value="link">Ссылка (!/link)</option>
+                            <option value="to">Переход (!/to)</option>
+                            <option value="popup">Попап (!/popup)</option>
+                        </select>
+                    </div>
+                    <div class="form-group hidden" id="groupFile">
+                        <label>Файл</label>
+                        <div id="dropZone" class="drop-zone">
+                            <span>Перетащите или Ctrl+V</span>
+                            <input type="file" id="fileInput">
+                        </div>
+                        <div style="display:flex; gap:10px; margin-top:10px;">
+                            <input type="text" id="modalFile" placeholder="Имя файла">
+                            <button class="tool-btn" onclick="openLibrary()">📂 Список</button>
+                        </div>
+                    </div>
+                    <div class="form-group" id="groupText">
+                        <label id="lblText">Текст</label>
+                        <input type="text" id="modalText" placeholder="Содержимое...">
+                    </div>
+                    <div class="form-group hidden" id="groupColor">
+                        <label>Цвет (HEX)</label>
+                        <input type="color" id="modalColorPicker" value="#ffffff" style="height: 50px; cursor: pointer;">
+                        <input type="text" id="modalColorText" placeholder="#ffffff" style="margin-top: 5px;">
+                    </div>
+                    <div class="form-group hidden" id="groupUrl">
+                        <label>URL</label>
+                        <input type="text" id="modalUrl" placeholder="https://google.com">
+                    </div>
+                    <div class="form-group hidden" id="groupId">
+                        <label>ID Статьи</label>
+                        <input type="text" id="modalTargetId" placeholder="how-to-start">
+                    </div>
+                </div>
+                <div class="modal-right">
+                    <label>Превью</label>
+                    <div class="preview-box">
+                        <img id="previewImg" class="preview-img hidden" src="">
+                        <div id="previewPlaceholder" style="color:var(--text-secondary); text-align: center;">Нет визуализации</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="tool-btn" style="background:transparent; border:none;" onclick="closeModal()">Отмена</button>
+                <button class="tool-btn btn-save" id="btnApply" onclick="applyModal()">Применить</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="translationModal" class="modal-overlay">
+        <div class="modal-content" style="width: 700px;">
+            <h3 class="modal-title">AI Перевод (ChatGPT)</h3>
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label>Шаг 1: Скопируй промпт</label>
+                <button class="tool-btn" style="width: 100%; justify-content: center; padding: 15px;" onclick="copyTranslationPrompt()">
+                    📋 Скопировать JSON и промпт для ChatGPT
+                </button>
+            </div>
+            <div class="form-group" style="flex:1; display:flex; flex-direction:column;">
+                <label>Шаг 2: Вставь ответ от ChatGPT сюда</label>
+                <textarea id="translationInput" style="flex:1; resize:none;" placeholder="Вставьте сюда ответ нейросети (JSON)..."></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="tool-btn" style="background:transparent; border:none;" onclick="document.getElementById('translationModal').classList.remove('active')">Отмена</button>
+                <button class="tool-btn btn-save" onclick="applyTranslation()">Применить перевод</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="libraryModal" class="modal-overlay">
+        <div class="modal-content" style="height: 80vh;">
+            <h3 class="modal-title">Медиа библиотека</h3>
+            <div class="modal-body">
+                <div class="modal-left">
+                    <div class="library-grid" id="libraryGrid">Загрузка...</div>
+                </div>
+                <div class="modal-right">
+                    <label>Выбрано</label>
+                    <div id="libPreviewText" style="text-align:center; padding:10px; word-break:break-all;">-</div>
+                    <div class="preview-box">
+                        <img id="libPreviewImg" class="preview-img hidden" src="">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="tool-btn" style="background:transparent; border:none;" onclick="closeLibrary()">Отмена</button>
+                <button class="tool-btn btn-save" onclick="confirmLib()">Выбрать</button>
+            </div>
+        </div>
+    </div>
+    <div id="notification">Успешно!</div>
+
+    <script>
+        const listContainer = document.getElementById('list-container');
+        const inpId = document.getElementById('inp-id');
+        const inpTitle = document.getElementById('inp-title');
+        const inpTags = document.getElementById('inp-tags');
+        const editor = document.getElementById('rich-editor');
+        const saveStatus = document.getElementById('saveStatus');
+
+        // Multi-lang store
+        let currentLang = 'ru';
+        let faqDataStore = {
+            titles: { ru: '', en: '', ro: '' },
+            contents: { ru: '', en: '', ro: '' },
+            tags: []
+        };
+
+        let savedRange = null; let editingNode = null; let pendingFile = null; let isDirty = false;
+
+        // Modal & Utils
+        const modal = document.getElementById('elementModal');
+        const modalType = document.getElementById('modalType');
+        const modalFile = document.getElementById('modalFile');
+        const modalText = document.getElementById('modalText');
+        const modalColorPicker = document.getElementById('modalColorPicker');
+        const modalColorText = document.getElementById('modalColorText');
+        const modalUrl = document.getElementById('modalUrl');
+        const modalTargetId = document.getElementById('modalTargetId');
+        const dropZone = document.getElementById('dropZone');
+        const previewImg = document.getElementById('previewImg');
+        const previewPlaceholder = document.getElementById('previewPlaceholder');
+        const libModal = document.getElementById('libraryModal');
+        const libGrid = document.getElementById('libraryGrid');
+        const libPreviewImg = document.getElementById('libPreviewImg');
+        const libPreviewText = document.getElementById('libPreviewText');
+        let libSelectedFile = null;
+
+        // --- LANGUAGE LOGIC ---
+        function switchLang(lang) {
+            faqDataStore.titles[currentLang] = inpTitle.value;
+            faqDataStore.contents[currentLang] = parseHtmlToCode(editor);
+            currentLang = lang;
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`btn-lang-${lang}`).classList.add('active');
+            document.getElementById('lbl-lang').innerText = lang.toUpperCase();
+            inpTitle.value = faqDataStore.titles[lang] || '';
+            editor.innerHTML = parseCodeToHtml(faqDataStore.contents[lang] || '');
+            if (!inpTitle.value && !editor.innerText.trim() && lang !== 'ru' && faqDataStore.contents['ru']) {
+                editor.innerHTML = parseCodeToHtml(faqDataStore.contents['ru']);
+            }
+        }
+
+        function updateStoreFromUI() {
+            faqDataStore.titles[currentLang] = inpTitle.value;
+            faqDataStore.contents[currentLang] = parseHtmlToCode(editor);
+            faqDataStore.tags = inpTags.value.split(',').map(t => t.trim()).filter(t => t);
+            isDirty = true;
+            updateStatusUI('unsaved');
+        }
+
+        async function updateStatusUI(type) {
+            saveStatus.classList.add('changing'); await new Promise(r => setTimeout(r, 200));
+            if (type === 'saved') { saveStatus.innerHTML = "Сохранено"; saveStatus.className = "status-text status-gray"; }
+            else { saveStatus.innerHTML = "● Не сохранено"; saveStatus.className = "status-text status-warn"; }
+            saveStatus.classList.remove('changing');
+        }
+
+        inpTitle.addEventListener('input', updateStoreFromUI);
+        editor.addEventListener('input', () => { updateStoreFromUI(); if (document.getElementById('splitWrapper').classList.contains('preview-active')) renderLivePreview(); });
+        inpTags.addEventListener('input', updateStoreFromUI);
+
+        window.addEventListener('beforeunload', (e) => { if (isDirty) { e.preventDefault(); e.returnValue = ''; } });
+
+        // --- COPY & PASTE LOGIC ---
+        editor.addEventListener('copy', (e) => {
+            const sel = window.getSelection();
+            if (!sel.rangeCount) return;
+            let node = sel.anchorNode;
+            let inside = false;
+            while(node) {
+                if (node.id === 'rich-editor') { inside = true; break; }
+                node = node.parentNode;
+            }
+            if(!inside) return;
+            e.preventDefault();
+            const range = sel.getRangeAt(0);
+            const div = document.createElement('div');
+            div.appendChild(range.cloneContents());
+            const code = parseHtmlToCode(div);
+            e.clipboardData.setData('text/plain', code);
+        });
+
+        editor.addEventListener('paste', (e) => {
+            e.preventDefault();
+            const text = (e.clipboardData || window.clipboardData).getData('text');
+            const html = parseCodeToHtml(text);
+            document.execCommand('insertHTML', false, html);
+        });
+
+        // --- TRANSLATION LOGIC ---
+        function openTranslationModal() {
+            document.getElementById('translationInput').value = '';
+            document.getElementById('translationModal').classList.add('active');
+        }
+
+        function copyTranslationPrompt() {
+            // Сохраняем текущее состояние
+            faqDataStore.titles[currentLang] = inpTitle.value;
+            faqDataStore.contents[currentLang] = parseHtmlToCode(editor);
+
+            const sourceData = {
+                title: faqDataStore.titles['ru'] || inpTitle.value,
+                content: faqDataStore.contents['ru'] || parseHtmlToCode(editor)
+            };
+
+            const promptText = `Переведи заголовок и контент из этого JSON на Румынский (ro) и Английский (en).\nВерни ответ строго как ОДИН JSON объект с ключами: "title-ro", "content-ro", "title-en", "content-en".\nНе пиши никаких вступлений, только валидный JSON.\n\nИсходные данные:\n${JSON.stringify(sourceData, null, 2)}`;
+            
+            navigator.clipboard.writeText(promptText).then(() => {
+                showNotification("Промпт скопирован!");
+            });
+        }
+
+        function applyTranslation() {
+            let text = document.getElementById('translationInput').value.trim();
+            if (!text) return alert("Вставьте ответ!");
+            
+            // Чистим от Markdown блоков кода
+            text = text.replace(/^```json/, '').replace(/^```/, '').replace(/```$/, '').trim();
+
+            try {
+                const data = JSON.parse(text);
+                
+                // Проверяем наличие ключей
+                if (data['title-ro'] || data['content-ro']) {
+                    if(data['title-ro']) faqDataStore.titles.ro = data['title-ro'];
+                    if(data['content-ro']) faqDataStore.contents.ro = data['content-ro'];
+                    if(data['title-en']) faqDataStore.titles.en = data['title-en'];
+                    if(data['content-en']) faqDataStore.contents.en = data['content-en'];
+
+                    isDirty = true;
+                    updateStatusUI('unsaved');
+                    showNotification("Переводы применены!");
+                    document.getElementById('translationModal').classList.remove('active');
+
+                    // Если открыт не русский язык, обновляем UI
+                    if (currentLang !== 'ru') {
+                        switchLang(currentLang);
+                    }
+                } else {
+                    alert("В JSON не найдены ключи title-ro, content-ro и т.д.");
+                }
+
+            } catch (e) {
+                console.error(e);
+                alert("Ошибка парсинга JSON! Убедитесь, что вы скопировали только JSON объект.");
+            }
+        }
+
+        async function loadList() {
+            const res = await fetch('/all'); const data = await res.json(); renderList(data);
+        }
+
+        function renderList(items) {
+            listContainer.innerHTML = '';
+            items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                const displayTitle = (item.titles && (item.titles.ru || Object.values(item.titles)[0])) || item.id;
+                div.innerText = displayTitle; div.dataset.id = item.id;
+                div.onclick = () => loadItem(item.id, div);
+                listContainer.appendChild(div);
+            });
+        }
+
+        async function loadItem(id, element) {
+            if (isDirty && !confirm("Сбросить изменения?")) return;
+            document.querySelectorAll('.list-item').forEach(el => el.classList.remove('active'));
+            if (element) element.classList.add('active');
+
+            const res = await fetch(`/get?faq=${id}`);
+            const data = await res.json();
+
+            faqDataStore = {
+                titles: data.titles || { ru: '', en: '', ro: '' },
+                contents: data.contents || { ru: '', en: '', ro: '' },
+                tags: data.tags || []
+            };
+
+            inpId.value = data.id; inpId.disabled = true;
+            inpTags.value = faqDataStore.tags.join(', ');
+
+            currentLang = 'ru';
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('btn-lang-ru').classList.add('active');
+            document.getElementById('lbl-lang').innerText = 'RU';
+
+            inpTitle.value = faqDataStore.titles.ru || '';
+            editor.innerHTML = parseCodeToHtml(faqDataStore.contents.ru || '');
+
+            isDirty = false; updateStatusUI('saved');
+            if (document.getElementById('splitWrapper').classList.contains('preview-active')) renderLivePreview();
+        }
+
+        function createNew() {
+            if (isDirty && !confirm("Сбросить?")) return;
+            document.querySelectorAll('.list-item').forEach(el => el.classList.remove('active'));
+            
+            faqDataStore = { titles: { ru: '', en: '', ro: '' }, contents: { ru: '', en: '', ro: '' }, tags: [] };
+            
+            inpId.value = ''; inpId.disabled = false;
+            inpTags.value = '';
+            inpTitle.value = '';
+            editor.innerHTML = '';
+            
+            currentLang = 'ru';
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('btn-lang-ru').classList.add('active');
+            document.getElementById('lbl-lang').innerText = 'RU';
+            
+            isDirty = true; updateStatusUI('unsaved');
+            editor.focus();
+        }
+
+        async function saveData() {
+            faqDataStore.titles[currentLang] = inpTitle.value;
+            faqDataStore.contents[currentLang] = parseHtmlToCode(editor);
+            faqDataStore.tags = inpTags.value.split(',').map(t => t.trim()).filter(t => t);
+
+            const payload = {
+                id: inpId.value.trim(),
+                titles: faqDataStore.titles,
+                contents: faqDataStore.contents,
+                tags: faqDataStore.tags
+            };
+
+            if (!payload.id || !payload.titles.ru) { alert("ID и Русский заголовок обязательны!"); return; }
+
+            const res = await fetch('/edit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            if (res.ok) {
+                showNotification("Сохранено!");
+                isDirty = false; updateStatusUI('saved');
+                loadList();
+            } else alert("Ошибка сохранения");
+        }
+
+        async function deleteData() {
+            const id = inpId.value.trim(); if (!id) return;
+            if (!confirm("Удалить?")) return;
+            await fetch('/delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+            createNew(); loadList(); showNotification("Удалено");
+        }
+
+        function togglePreview() {
+            const wrap = document.getElementById('splitWrapper');
+            const btn = document.getElementById('btnPreviewToggle');
+            wrap.classList.toggle('preview-active');
+            btn.classList.toggle('active');
+            if (wrap.classList.contains('preview-active')) renderLivePreview();
+        }
+        function renderLivePreview() {
+            const html = renderFinalHtml(parseHtmlToCode(editor));
+            document.getElementById('livePreview').innerHTML = html;
+        }
+        function renderFinalHtml(raw) {
+            if (!raw) return '';
+            let html = '';
+            raw.split('\n').forEach(line => {
+                if (!line.trim()) return;
+                line = line.replace(/!\/popup\s+t=([^\/]+)\//g, '<div style="background:#333;padding:10px;border-left:4px solid white;">$1</div>');
+                line = line.replace(/!\/icon\s+i=([^\/]+)\//g, '<img class="inline-icon" src="/assets/$1">');
+                line = line.replace(/!\/img\s+i=([^\/]+)\s+t=([^\/]+)\//g, '<span style="text-decoration:underline;cursor:pointer">$2</span>');
+                line = line.replace(/!\/link\s+url=([^\/]+)\//g, (m, u) => { const c = u.replace(/~sl~/g, '/'); return `<a href="${c}" target="_blank" class="custom-link">${c}</a>`; });
+                line = line.replace(/!\/to\s+id=([^\/]+)\//g, '<span style="color:#28a745">→ См. $1</span>');
+                line = line.replace(/!\/color\s+c=([^\s]+)\s+t=([^\/]+)\//g, '<span style="color:$1">$2</span>');
+                line = line.replace(/!\/bold\s+t=([^\/]+)\//g, '<b>$1</b>');
+                line = line.replace(/!\/strike\s+t=([^\/]+)\//g, '<s>$1</s>');
+                line = line.replace(/!\/line\s+t=([^\/]+)\//g, '<u>$1</u>');
+                line = line.replace(/\*([^*]+)\*/g, '<b>$1</b>');
+                html += `<li>${line}</li>`;
+            });
+            return html;
+        }
+
+        function toggleModalFields() {
+            const type = modalType.value;
+            ['groupFile', 'groupText', 'groupColor', 'groupUrl', 'groupId'].forEach(id => document.getElementById(id).classList.add('hidden'));
+            previewImg.classList.add('hidden'); previewPlaceholder.classList.remove('hidden');
+            if (type === 'icon') document.getElementById('groupFile').classList.remove('hidden');
+            else if (type === 'img') { document.getElementById('groupFile').classList.remove('hidden'); document.getElementById('groupText').classList.remove('hidden'); }
+            else if (type === 'color') { document.getElementById('groupText').classList.remove('hidden'); document.getElementById('groupColor').classList.remove('hidden'); }
+            else if (type === 'link') document.getElementById('groupUrl').classList.remove('hidden');
+            else if (type === 'to') document.getElementById('groupId').classList.remove('hidden');
+            else document.getElementById('groupText').classList.remove('hidden');
+        }
+        modalColorPicker.addEventListener('input', e => modalColorText.value = e.target.value);
+        modalColorText.addEventListener('input', e => modalColorPicker.value = e.target.value);
+
+        function openInsertModal(type) {
+            editingNode = null; pendingFile = null;
+            if (!savedRange && document.activeElement !== editor) editor.focus();
+            else { const sel = window.getSelection(); if (sel.rangeCount > 0 && editor.contains(sel.anchorNode)) savedRange = sel.getRangeAt(0); }
+            const textSelected = savedRange && !savedRange.collapsed ? savedRange.toString() : '';
+            if (textSelected && ['bold', 'strike', 'line'].includes(type)) {
+                insertHtmlAtCursor(`<span class="chip chip-${type}" contenteditable="false" data-type="${type}" data-text="${textSelected}">${textSelected}</span> `);
+                if (document.getElementById('splitWrapper').classList.contains('preview-active')) renderLivePreview();
+                return;
+            }
+            modalType.value = type; modalType.disabled = false;
+            modalFile.value = ''; modalText.value = textSelected; modalUrl.value = ''; modalTargetId.value = '';
+            modalColorPicker.value = '#ffffff'; modalColorText.value = '#ffffff';
+            updatePreview(null); toggleModalFields(); modal.classList.add('active');
+        }
+
+        function updatePreview(src) { if (src) { previewImg.src = src; previewImg.classList.remove('hidden'); previewPlaceholder.classList.add('hidden'); } else { previewImg.classList.add('hidden'); previewPlaceholder.classList.remove('hidden'); } }
+        modalFile.addEventListener('input', e => { if (!pendingFile) updatePreview(e.target.value ? `/assets/${e.target.value}` : null); });
+
+        async function openLibrary() {
+            libSelectedFile = null; libGrid.innerHTML = 'Loading...'; libPreviewImg.classList.add('hidden'); libModal.classList.add('active');
+            try {
+                const res = await fetch('/list_assets'); const files = await res.json();
+                libGrid.innerHTML = '';
+                files.forEach(f => {
+                    const el = document.createElement('div'); el.className = 'library-item';
+                    el.innerHTML = `<img src="/assets/${f}"><span>${f}</span>`;
+                    el.onclick = () => {
+                        libSelectedFile = f; document.querySelectorAll('.library-item').forEach(i => i.style.borderColor = 'var(--border-color)'); el.style.borderColor = 'var(--accent-color)';
+                        libPreviewImg.src = `/assets/${f}`; libPreviewImg.classList.remove('hidden'); libPreviewText.innerText = f;
+                    };
+                    libGrid.appendChild(el);
+                });
+            } catch (e) { libGrid.innerText = "Ошибка"; }
+        }
+        function confirmLib() { if (libSelectedFile) { modalFile.value = libSelectedFile; pendingFile = null; updatePreview(`/assets/${libSelectedFile}`); closeLibrary(); } }
+        function closeLibrary() { libModal.classList.remove('active'); }
+        function closeModal() { modal.classList.remove('active'); }
+
+        async function applyModal() {
+            let fname = modalFile.value.trim();
+            if ((modalType.value === 'img' || modalType.value === 'icon') && pendingFile) {
+                if (!fname) return alert("Имя файла!");
+                const fd = new FormData(); fd.append('file', pendingFile); fd.append('custom_name', fname);
+                const res = await fetch('/upload', { method: 'POST', body: fd });
+                if (res.ok) fname = (await res.json()).filename; else return alert("Ошибка загрузки");
+            }
+            const type = modalType.value; const text = modalText.value; let tag = '';
+            if (type === 'icon') tag = `<span class="chip chip-icon" contenteditable="false" data-type="icon" data-file="${fname}">Icon: ${fname}</span>`;
+            else if (type === 'img') tag = `<span class="chip chip-img" contenteditable="false" data-type="img" data-file="${fname}" data-text="${text}">Img: ${text}</span>`;
+            else if (type === 'bold') tag = `<span class="chip chip-bold" contenteditable="false" data-type="bold" data-text="${text}">${text}</span>`;
+            else if (type === 'strike') tag = `<span class="chip chip-strike" contenteditable="false" data-type="strike" data-text="${text}">${text}</span>`;
+            else if (type === 'line') tag = `<span class="chip chip-line" contenteditable="false" data-type="line" data-text="${text}">${text}</span>`;
+            else if (type === 'color') tag = `<span class="chip chip-color" contenteditable="false" data-type="color" data-text="${text}" data-color="${modalColorText.value}" style="border-bottom: 2px solid ${modalColorText.value}">${text}</span>`;
+            else if (type === 'popup') tag = `<span class="chip chip-popup" contenteditable="false" data-type="popup" data-text="${text}">Popup: ${text}</span>`;
+            else if (type === 'link') tag = `<span class="chip chip-link" contenteditable="false" data-type="link" data-url="${modalUrl.value}">Link: ${modalUrl.value}</span>`;
+            else if (type === 'to') tag = `<span class="chip chip-to" contenteditable="false" data-type="to" data-id="${modalTargetId.value}">To: ${modalTargetId.value}</span>`;
+
+            if (editingNode) editingNode.outerHTML = tag; else insertHtmlAtCursor(tag + ' ');
+            if (document.getElementById('splitWrapper').classList.contains('preview-active')) renderLivePreview();
+            closeModal();
+        }
+
+        editor.addEventListener('click', e => {
+            const c = e.target.closest('.chip');
+            if (c) {
+                editingNode = c;
+                const t = c.dataset.type; modalType.value = t; modalType.disabled = true; toggleModalFields();
+                if (c.dataset.file) modalFile.value = c.dataset.file;
+                if (c.dataset.text) modalText.value = c.dataset.text;
+                if (c.dataset.color) { modalColorText.value = c.dataset.color; modalColorPicker.value = c.dataset.color; }
+                if (c.dataset.url) modalUrl.value = c.dataset.url;
+                if (c.dataset.id) modalTargetId.value = c.dataset.id;
+                if (t === 'icon' || t === 'img') updatePreview(`/assets/${c.dataset.file}`);
+                modal.classList.add('active');
+            }
+        });
+        editor.addEventListener('blur', () => { const s = window.getSelection(); if (s.rangeCount) savedRange = s.getRangeAt(0); });
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(e => dropZone.addEventListener(e, ev => { ev.preventDefault(); ev.stopPropagation(); }));
+        dropZone.addEventListener('drop', e => { const f = e.dataTransfer.files[0]; if (f) { pendingFile = f; modalFile.value = f.name; updatePreview(URL.createObjectURL(f)); } });
+        document.addEventListener('paste', e => { if (!modal.classList.contains('active')) return; const items = (e.clipboardData || e.originalEvent.clipboardData).items; for (let i of items) if (i.type.startsWith('image')) { e.preventDefault(); const f = i.getAsFile(); pendingFile = f; modalFile.value = f.name; updatePreview(URL.createObjectURL(f)); } });
+        function insertHtmlAtCursor(html) { editor.focus(); const sel = window.getSelection(); if (savedRange) { sel.removeAllRanges(); sel.addRange(savedRange); } document.execCommand('insertHTML', false, html); }
+        function showNotification(msg) { const n = document.getElementById('notification'); n.innerText = msg; n.classList.add('show'); setTimeout(() => n.classList.remove('show'), 2000); }
+        document.addEventListener('keydown', e => { if (e.key === "Escape") { closeModal(); closeLibrary(); } if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) { e.preventDefault(); saveData(); } });
+
+        // Parsers
+        function parseCodeToHtml(text) {
+            if (!text) return ''; let s = text.replace(/</g, "&lt;");
+            s = s.replace(/!\/icon\s+i=([^\/]+)\//g, (m, f) => `<span class="chip chip-icon" contenteditable="false" data-type="icon" data-file="${f}">Icon: ${f}</span>`);
+            s = s.replace(/!\/img\s+i=([^\/]+)\s+t=([^\/]+)\//g, (m, f, t) => `<span class="chip chip-img" contenteditable="false" data-type="img" data-file="${f}" data-text="${t.trim()}">Img: ${t.trim()}</span>`);
+            s = s.replace(/!\/bold\s+t=([^\/]+)\//g, (m, t) => `<span class="chip chip-bold" contenteditable="false" data-type="bold" data-text="${t}">${t}</span>`);
+            s = s.replace(/!\/strike\s+t=([^\/]+)\//g, (m, t) => `<span class="chip chip-strike" contenteditable="false" data-type="strike" data-text="${t}">${t}</span>`);
+            s = s.replace(/!\/line\s+t=([^\/]+)\//g, (m, t) => `<span class="chip chip-line" contenteditable="false" data-type="line" data-text="${t}">${t}</span>`);
+            s = s.replace(/!\/color\s+c=([^\s]+)\s+t=([^\/]+)\//g, (m, c, t) => `<span class="chip chip-color" contenteditable="false" data-type="color" data-color="${c}" data-text="${t}" style="border-bottom:2px solid ${c}">${t}</span>`);
+            s = s.replace(/!\/popup\s+t=([^\/]+)\//g, (m, t) => `<span class="chip chip-popup" contenteditable="false" data-type="popup" data-text="${t}">Popup: ${t}</span>`);
+            s = s.replace(/!\/to\s+id=([^\/]+)\//g, (m, id) => `<span class="chip chip-to" contenteditable="false" data-type="to" data-id="${id}">To: ${id}</span>`);
+            s = s.replace(/!\/link\s+url=([^\/]+)\//g, (m, u) => { const dec = u.replace(/~sl~/g, '/'); return `<span class="chip chip-link" contenteditable="false" data-type="link" data-url="${dec}">Link: ${dec}</span>`; });
+            return s;
+        }
+
+        function parseHtmlToCode(el) {
+            let res = "";
+            el.childNodes.forEach(n => {
+                if (n.nodeType === 3) res += n.textContent;
+                else if (n.nodeType === 1) {
+                    if (n.classList.contains('chip')) {
+                        const d = n.dataset;
+                        if (d.type === 'icon') res += `!/icon i=${d.file}/`;
+                        else if (d.type === 'img') res += `!/img i=${d.file} t=${d.text}/`;
+                        else if (d.type === 'bold') res += `!/bold t=${d.text}/`;
+                        else if (d.type === 'strike') res += `!/strike t=${d.text}/`;
+                        else if (d.type === 'line') res += `!/line t=${d.text}/`;
+                        else if (d.type === 'color') res += `!/color c=${d.color} t=${d.text}/`;
+                        else if (d.type === 'popup') res += `!/popup t=${d.text}/`;
+                        else if (d.type === 'to') res += `!/to id=${d.id}/`;
+                        else if (d.type === 'link') { const enc = d.url.replace(/\//g, '~sl~'); res += `!/link url=${enc}/`; }
+                    } else if (n.tagName === 'BR') res += '\n'; else if (n.tagName === 'DIV') { res += '\n'; res += parseHtmlToCode(n); }
+                }
+            });
+            return res.trim();
+        }
+
+        loadList();
+    </script>
+</body>
+
+</html>
