@@ -6,6 +6,8 @@ from functools import wraps
 
 app = Flask(__name__)
 
+CURRENT_VERSION = "1.0"
+
 UPLOAD_FOLDER = 'static'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -163,4 +165,8 @@ def list_assets():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    settings = load('settings.json')
+    settings["current_ver"] = CURRENT_VERSION
+    save('settings.json', settings)
+    
+    app.run(debug=True, host='0.0.0.0', port=settings.get('port', 0))
