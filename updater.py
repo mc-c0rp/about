@@ -77,7 +77,7 @@ def update():
     result = check_and_download()
     if result != 1:
         _log(f"update failed. code: {result} ({error_codes.get(result, 'unknown error')})")
-    else:
+    elif result == 1:
         _log("unpacking main.zip...")
         with zipfile.ZipFile('main.zip', 'r') as zip_ref:
             zip_ref.extractall('.')
@@ -88,8 +88,9 @@ def update():
     _log("log available in update_log.txt\nexit.")
     with open('update_log.txt', 'w', encoding='utf-8') as log_file:
         log_file.write('\n'.join(log))
-    # open the main.py
-    os.startfile('main.py')
+    
+    if result >= 0:
+        os.startfile('main.py')
 
 if __name__ == "__main__":
     update()
