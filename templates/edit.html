@@ -395,6 +395,8 @@
             outline: none;
             overflow-y: auto;
             white-space: pre-wrap;
+            overflow-wrap: break-word; /* Важно: разрешает перенос слов перед чипом */
+            word-wrap: break-word;
             max-width: 100%;
         }
 
@@ -425,6 +427,8 @@
         .chip {
             display: inline-flex;
             align-items: center;
+            vertical-align: middle;
+            white-space: nowrap;
             background-color: var(--chip-bg);
             border: 1px solid var(--chip-border);
             border-radius: 4px;
@@ -455,6 +459,8 @@
         .chip-link::before { content: "🔗"; margin-right: 5px; }
         .chip-to { color: #28a745; border-color: #28a745; }
         .chip-to::before { content: "➡"; margin-right: 5px; }
+        .chip-space { background-color: #f0f0f0; border-color: #bbb; color: #555; }
+        .chip-space::before { content: "␣"; margin-right: 5px; }
 
         /* Modals */
         .modal-overlay {
@@ -574,6 +580,7 @@
                     <button class="tool-btn" onclick="openInsertModal('strike')"><s>S</s> Strike</button>
                     <button class="tool-btn" onclick="openInsertModal('line')"><u>U</u> Line</button>
                     <button class="tool-btn" onclick="openInsertModal('color')">🎨 Color</button>
+                    <button class="tool-btn" onclick="openInsertModal('space')">␣ Space</button>
                     <div style="width: 1px; height: 20px; background: var(--border-color); margin: 0 5px;"></div>
                     <button class="tool-btn" onclick="openInsertModal('icon')">⭐ Icon</button>
                     <button class="tool-btn" onclick="openInsertModal('img')">🖼️ Img</button>
@@ -611,6 +618,7 @@
                             <option value="strike">Зачеркнутый</option>
                             <option value="line">Подчеркнутый</option>
                             <option value="color">Цветной текст</option>
+                            <option value="space">Отступ (!/space)</option>
                             <option value="icon">Иконка (!/icon)</option>
                             <option value="img">Картинка (!/img)</option>
                             <option value="link">Ссылка (!/link)</option>
@@ -963,16 +971,32 @@
             btn.classList.toggle('active');
             if (wrap.classList.contains('preview-active')) renderLivePreview();
         }
+        
+        // --- FIXED PREVIEW RENDERER ---
         function renderLivePreview() {
             const html = renderFinalHtml(parseHtmlToCode(editor));
             document.getElementById('livePreview').innerHTML = html;
         }
-        function renderFinalHtml(raw) {
-            if (!raw) return '';
+        function renderFinalHtml(rawText) {
+            if (!rawText) return '';
+            
+            // Сначала обрабатываем POPUP как блок (так же, как в index.html)
+            let processedText = rawText.replace(/!\/popup\s+t=([\s\S]+?)\//g, (match, content) => {
+                const cleanContent = content.trim().replace(/\n/g, '<br>');
+                // Добавлены стили для переноса строк
+                return `<div style="background:#333;padding:10px;border-left:4px solid white; white-space: pre-wrap; word-wrap: break-word;">${cleanContent}</div>`;
+            });
+
             let html = '';
-            raw.split('\n').forEach(line => {
+            const lines = processedText.split('\n');
+            lines.forEach(line => {
                 if (!line.trim()) return;
-                line = line.replace(/!\/popup\s+t=([^\/]+)\//g, '<div style="background:#333;padding:10px;border-left:4px solid white;">$1</div>');
+                
+                if (line.startsWith('<div')) {
+                    html += `<li>${line}</li>`;
+                    return;
+                }
+
                 line = line.replace(/!\/icon\s+i=([^\/]+)\//g, '<img class="inline-icon" src="/assets/$1">');
                 line = line.replace(/!\/img\s+i=([^\/]+)\s+t=([^\/]+)\//g, '<span style="text-decoration:underline;cursor:pointer">$2</span>');
                 line = line.replace(/!\/link\s+url=([^\/]+)\//g, (m, u) => { const c = u.replace(/~sl~/g, '/'); return `<a href="${c}" target="_blank" class="custom-link">${c}</a>`; });
@@ -981,6 +1005,7 @@
                 line = line.replace(/!\/bold\s+t=([^\/]+)\//g, '<b>$1</b>');
                 line = line.replace(/!\/strike\s+t=([^\/]+)\//g, '<s>$1</s>');
                 line = line.replace(/!\/line\s+t=([^\/]+)\//g, '<u>$1</u>');
+                line = line.replace(/!\/space\s+s=(\d+)\//g, (m, c) => '&nbsp;'.repeat(parseInt(c, 10)));
                 line = line.replace(/\*([^*]+)\*/g, '<b>$1</b>');
                 html += `<li>${line}</li>`;
             });
@@ -991,11 +1016,14 @@
             const type = modalType.value;
             ['groupFile', 'groupText', 'groupColor', 'groupUrl', 'groupId'].forEach(id => document.getElementById(id).classList.add('hidden'));
             previewImg.classList.add('hidden'); previewPlaceholder.classList.remove('hidden');
+            document.getElementById('lblText').innerText = "Текст";
+
             if (type === 'icon') document.getElementById('groupFile').classList.remove('hidden');
             else if (type === 'img') { document.getElementById('groupFile').classList.remove('hidden'); document.getElementById('groupText').classList.remove('hidden'); }
             else if (type === 'color') { document.getElementById('groupText').classList.remove('hidden'); document.getElementById('groupColor').classList.remove('hidden'); }
             else if (type === 'link') document.getElementById('groupUrl').classList.remove('hidden');
             else if (type === 'to') document.getElementById('groupId').classList.remove('hidden');
+            else if (type === 'space') { document.getElementById('groupText').classList.remove('hidden'); document.getElementById('lblText').innerText = "Количество пробелов"; }
             else document.getElementById('groupText').classList.remove('hidden');
         }
         modalColorPicker.addEventListener('input', e => modalColorText.value = e.target.value);
@@ -1007,13 +1035,18 @@
             else { const sel = window.getSelection(); if (sel.rangeCount > 0 && editor.contains(sel.anchorNode)) savedRange = sel.getRangeAt(0); }
             const textSelected = savedRange && !savedRange.collapsed ? savedRange.toString() : '';
             if (textSelected && ['bold', 'strike', 'line'].includes(type)) {
-                insertHtmlAtCursor(`<span class="chip chip-${type}" contenteditable="false" data-type="${type}" data-text="${textSelected}">${textSelected}</span> `);
+                insertHtmlAtCursor(`<wbr><span class="chip chip-${type}" contenteditable="false" data-type="${type}" data-text="${textSelected}">${textSelected}</span>&nbsp;`);
                 if (document.getElementById('splitWrapper').classList.contains('preview-active')) renderLivePreview();
                 return;
             }
             modalType.value = type; modalType.disabled = false;
             modalFile.value = ''; modalText.value = textSelected; modalUrl.value = ''; modalTargetId.value = '';
             modalColorPicker.value = '#ffffff'; modalColorText.value = '#ffffff';
+            
+            if (type === 'space') {
+                modalText.value = '4';
+            }
+
             updatePreview(null); toggleModalFields(); modal.classList.add('active');
         }
 
@@ -1049,17 +1082,26 @@
                 if (res.ok) fname = (await res.json()).filename; else return alert("Ошибка загрузки");
             }
             const type = modalType.value; const text = modalText.value; let tag = '';
-            if (type === 'icon') tag = `<span class="chip chip-icon" contenteditable="false" data-type="icon" data-file="${fname}">Icon: ${fname}</span>`;
-            else if (type === 'img') tag = `<span class="chip chip-img" contenteditable="false" data-type="img" data-file="${fname}" data-text="${text}">Img: ${text}</span>`;
-            else if (type === 'bold') tag = `<span class="chip chip-bold" contenteditable="false" data-type="bold" data-text="${text}">${text}</span>`;
-            else if (type === 'strike') tag = `<span class="chip chip-strike" contenteditable="false" data-type="strike" data-text="${text}">${text}</span>`;
-            else if (type === 'line') tag = `<span class="chip chip-line" contenteditable="false" data-type="line" data-text="${text}">${text}</span>`;
-            else if (type === 'color') tag = `<span class="chip chip-color" contenteditable="false" data-type="color" data-text="${text}" data-color="${modalColorText.value}" style="border-bottom: 2px solid ${modalColorText.value}">${text}</span>`;
-            else if (type === 'popup') tag = `<span class="chip chip-popup" contenteditable="false" data-type="popup" data-text="${text}">Popup: ${text}</span>`;
-            else if (type === 'link') tag = `<span class="chip chip-link" contenteditable="false" data-type="link" data-url="${modalUrl.value}">Link: ${modalUrl.value}</span>`;
-            else if (type === 'to') tag = `<span class="chip chip-to" contenteditable="false" data-type="to" data-id="${modalTargetId.value}">To: ${modalTargetId.value}</span>`;
+            
+            // --- Helper for escaping quotes ---
+            const safe = (str) => (str || '').replace(/"/g, '&quot;');
 
-            if (editingNode) editingNode.outerHTML = tag; else insertHtmlAtCursor(tag + ' ');
+            if (type === 'icon') tag = `<wbr><span class="chip chip-icon" contenteditable="false" data-type="icon" data-file="${safe(fname)}">Icon: ${fname}</span>`;
+            else if (type === 'img') tag = `<wbr><span class="chip chip-img" contenteditable="false" data-type="img" data-file="${safe(fname)}" data-text="${safe(text)}">Img: ${text}</span>`;
+            else if (type === 'bold') tag = `<wbr><span class="chip chip-bold" contenteditable="false" data-type="bold" data-text="${safe(text)}">${text}</span>`;
+            else if (type === 'strike') tag = `<wbr><span class="chip chip-strike" contenteditable="false" data-type="strike" data-text="${safe(text)}">${text}</span>`;
+            else if (type === 'line') tag = `<wbr><span class="chip chip-line" contenteditable="false" data-type="line" data-text="${safe(text)}">${text}</span>`;
+            else if (type === 'color') tag = `<wbr><span class="chip chip-color" contenteditable="false" data-type="color" data-text="${safe(text)}" data-color="${safe(modalColorText.value)}" style="border-bottom: 2px solid ${safe(modalColorText.value)}">${text}</span>`;
+            else if (type === 'popup') tag = `<wbr><span class="chip chip-popup" contenteditable="false" data-type="popup" data-text="${safe(text)}">Popup: ${text}</span>`;
+            else if (type === 'link') tag = `<wbr><span class="chip chip-link" contenteditable="false" data-type="link" data-url="${safe(modalUrl.value)}">Link: ${modalUrl.value}</span>`;
+            else if (type === 'to') tag = `<wbr><span class="chip chip-to" contenteditable="false" data-type="to" data-id="${safe(modalTargetId.value)}">To: ${modalTargetId.value}</span>`;
+            else if (type === 'space') {
+                let count = parseInt(text);
+                if (isNaN(count) || count < 0) count = 4;
+                tag = `<wbr><span class="chip chip-space" contenteditable="false" data-type="space" data-count="${count}">Space: ${count}</span>`;
+            }
+
+            if (editingNode) editingNode.outerHTML = tag; else insertHtmlAtCursor(tag + '&nbsp;');
             if (document.getElementById('splitWrapper').classList.contains('preview-active')) renderLivePreview();
             closeModal();
         }
@@ -1074,6 +1116,8 @@
                 if (c.dataset.color) { modalColorText.value = c.dataset.color; modalColorPicker.value = c.dataset.color; }
                 if (c.dataset.url) modalUrl.value = c.dataset.url;
                 if (c.dataset.id) modalTargetId.value = c.dataset.id;
+                if (c.dataset.count) modalText.value = c.dataset.count;
+
                 if (t === 'icon' || t === 'img') updatePreview(`/assets/${c.dataset.file}`);
                 modal.classList.add('active');
             }
@@ -1089,15 +1133,20 @@
         // Parsers
         function parseCodeToHtml(text) {
             if (!text) return ''; let s = text.replace(/</g, "&lt;");
-            s = s.replace(/!\/icon\s+i=([^\/]+)\//g, (m, f) => `<span class="chip chip-icon" contenteditable="false" data-type="icon" data-file="${f}">Icon: ${f}</span>`);
-            s = s.replace(/!\/img\s+i=([^\/]+)\s+t=([^\/]+)\//g, (m, f, t) => `<span class="chip chip-img" contenteditable="false" data-type="img" data-file="${f}" data-text="${t.trim()}">Img: ${t.trim()}</span>`);
-            s = s.replace(/!\/bold\s+t=([^\/]+)\//g, (m, t) => `<span class="chip chip-bold" contenteditable="false" data-type="bold" data-text="${t}">${t}</span>`);
-            s = s.replace(/!\/strike\s+t=([^\/]+)\//g, (m, t) => `<span class="chip chip-strike" contenteditable="false" data-type="strike" data-text="${t}">${t}</span>`);
-            s = s.replace(/!\/line\s+t=([^\/]+)\//g, (m, t) => `<span class="chip chip-line" contenteditable="false" data-type="line" data-text="${t}">${t}</span>`);
-            s = s.replace(/!\/color\s+c=([^\s]+)\s+t=([^\/]+)\//g, (m, c, t) => `<span class="chip chip-color" contenteditable="false" data-type="color" data-color="${c}" data-text="${t}" style="border-bottom:2px solid ${c}">${t}</span>`);
-            s = s.replace(/!\/popup\s+t=([^\/]+)\//g, (m, t) => `<span class="chip chip-popup" contenteditable="false" data-type="popup" data-text="${t}">Popup: ${t}</span>`);
-            s = s.replace(/!\/to\s+id=([^\/]+)\//g, (m, id) => `<span class="chip chip-to" contenteditable="false" data-type="to" data-id="${id}">To: ${id}</span>`);
-            s = s.replace(/!\/link\s+url=([^\/]+)\//g, (m, u) => { const dec = u.replace(/~sl~/g, '/'); return `<span class="chip chip-link" contenteditable="false" data-type="link" data-url="${dec}">Link: ${dec}</span>`; });
+            
+            // --- Helper to escape quotes for HTML attributes ---
+            const esc = (str) => (str || '').replace(/"/g, '&quot;');
+
+            s = s.replace(/!\/icon\s+i=([^\/]+)\//g, (m, f) => `<wbr><span class="chip chip-icon" contenteditable="false" data-type="icon" data-file="${esc(f)}">Icon: ${f}</span>`);
+            s = s.replace(/!\/img\s+i=([^\/]+)\s+t=([^\/]+)\//g, (m, f, t) => `<wbr><span class="chip chip-img" contenteditable="false" data-type="img" data-file="${esc(f)}" data-text="${esc(t.trim())}">Img: ${t.trim()}</span>`);
+            s = s.replace(/!\/bold\s+t=([^\/]+)\//g, (m, t) => `<wbr><span class="chip chip-bold" contenteditable="false" data-type="bold" data-text="${esc(t)}">${t}</span>`);
+            s = s.replace(/!\/strike\s+t=([^\/]+)\//g, (m, t) => `<wbr><span class="chip chip-strike" contenteditable="false" data-type="strike" data-text="${esc(t)}">${t}</span>`);
+            s = s.replace(/!\/line\s+t=([^\/]+)\//g, (m, t) => `<wbr><span class="chip chip-line" contenteditable="false" data-type="line" data-text="${esc(t)}">${t}</span>`);
+            s = s.replace(/!\/color\s+c=([^\s]+)\s+t=([^\/]+)\//g, (m, c, t) => `<wbr><span class="chip chip-color" contenteditable="false" data-type="color" data-color="${esc(c)}" data-text="${esc(t)}" style="border-bottom:2px solid ${c}">${t}</span>`);
+            s = s.replace(/!\/popup\s+t=([\s\S]+?)\//g, (m, t) => `<wbr><span class="chip chip-popup" contenteditable="false" data-type="popup" data-text="${esc(t)}">Popup: ${t}</span>`);
+            s = s.replace(/!\/to\s+id=([^\/]+)\//g, (m, id) => `<wbr><span class="chip chip-to" contenteditable="false" data-type="to" data-id="${esc(id)}">To: ${id}</span>`);
+            s = s.replace(/!\/link\s+url=([^\/]+)\//g, (m, u) => { const dec = u.replace(/~sl~/g, '/'); return `<wbr><span class="chip chip-link" contenteditable="false" data-type="link" data-url="${esc(dec)}">Link: ${dec}</span>`; });
+            s = s.replace(/!\/space\s+s=(\d+)\//g, (m, c) => `<wbr><span class="chip chip-space" contenteditable="false" data-type="space" data-count="${c}">Space: ${c}</span>`);
             return s;
         }
 
@@ -1106,6 +1155,7 @@
             el.childNodes.forEach(n => {
                 if (n.nodeType === 3) res += n.textContent;
                 else if (n.nodeType === 1) {
+                    if (n.tagName === 'WBR') return; 
                     if (n.classList.contains('chip')) {
                         const d = n.dataset;
                         if (d.type === 'icon') res += `!/icon i=${d.file}/`;
@@ -1116,6 +1166,7 @@
                         else if (d.type === 'color') res += `!/color c=${d.color} t=${d.text}/`;
                         else if (d.type === 'popup') res += `!/popup t=${d.text}/`;
                         else if (d.type === 'to') res += `!/to id=${d.id}/`;
+                        else if (d.type === 'space') res += `!/space s=${d.count}/`;
                         else if (d.type === 'link') { const enc = d.url.replace(/\//g, '~sl~'); res += `!/link url=${enc}/`; }
                     } else if (n.tagName === 'BR') res += '\n'; else if (n.tagName === 'DIV') { res += '\n'; res += parseHtmlToCode(n); }
                 }

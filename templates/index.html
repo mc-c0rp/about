@@ -27,6 +27,7 @@
             --popup-bg: #eef2f5;
             --selection-bg: #d8d8d8;
             --selection-text: #000000;
+            --success-green: #28a745;
         }
 
         .dark-theme {
@@ -47,12 +48,17 @@
             --selection-text: #ffffff;
         }
 
-        ::selection { background-color: var(--selection-bg); color: var(--selection-text); }
+        ::selection {
+            background-color: var(--selection-bg);
+            color: var(--selection-text);
+        }
 
         body {
             font-family: var(--font-family-mono);
-            margin: 0; padding: 0;
-            background-color: var(--bg-page); color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-page);
+            color: var(--text-primary);
             transition: background-color 0.3s, color 0.3s;
             line-height: 1.6;
             overflow-x: hidden;
@@ -65,56 +71,124 @@
         }
 
         .container {
-            max-width: 1200px; margin: 50px auto; padding: 25px; min-height: 80vh;
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 25px;
+            min-height: 80vh;
             position: relative;
         }
 
         /* --- ШАПКА --- */
         header {
-            display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 30px;
-            position: relative; z-index: 10;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 10;
         }
 
-        .header-left { display: flex; align-items: center; gap: 20px; }
-        .help-title { font-size: 26px; font-weight: 600; margin: 0; }
-        
-        .header-controls { 
-            display: flex; gap: 10px; align-items: center; 
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .help-title {
+            font-size: 26px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        /* Кнопка "Нашли ошибку" */
+        .report-btn {
+            background: transparent;
+            border: 1px dashed var(--border-color);
+            color: var(--text-secondary);
+            padding: 6px 12px;
+            border-radius: var(--border-radius);
+            font-family: inherit;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .report-btn:hover {
+            border-color: var(--link-color);
+            color: var(--link-color);
+            background: var(--hover-color);
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
         }
 
         .search-input {
-            padding: 10px 15px; border-radius: var(--border-radius); border: 1px solid var(--border-color);
-            background: var(--bg-card); color: var(--text-primary); font-family: inherit; font-size: 14px; width: 300px;
-            transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
+            padding: 10px 15px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 14px;
+            width: 300px;
+            transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
-        .search-input:focus { outline: none; border-color: var(--text-secondary); }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--text-secondary);
+        }
 
         /* Состояние размытого поиска (только инпут) */
         .search-input.blurred {
             opacity: 0.3;
             filter: blur(4px);
-            pointer-events: none; 
+            pointer-events: none;
         }
 
         .lang-select {
-            padding: 10px; border-radius: var(--border-radius); border: 1px solid var(--border-color);
-            background: var(--bg-card); color: var(--text-primary); font-family: inherit; font-size: 14px; cursor: pointer;
+            padding: 10px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 14px;
+            cursor: pointer;
         }
 
         /* Общий стиль для кнопок (Тема и Edit) */
         .theme-toggle-btn {
-            background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary);
-            width: 40px; height: 40px; border-radius: var(--border-radius); cursor: pointer;
-            font-size: 20px; display: flex; justify-content: center; align-items: center;
-            transition: 0.2s; box-shadow: var(--shadow-subtle);
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            width: 40px;
+            height: 40px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: 0.2s;
+            box-shadow: var(--shadow-subtle);
         }
-        .theme-toggle-btn:hover { border-color: var(--accent-color); color: var(--accent-color); }
+
+        .theme-toggle-btn:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
 
         /* --- АНИМАЦИЯ И КОНТЕЙНЕРЫ --- */
         .views-wrapper {
             position: relative;
             width: 100%;
-            min-height: 400px; 
+            min-height: 400px;
         }
 
         .view-section {
@@ -123,11 +197,14 @@
             will-change: transform, opacity, filter;
         }
 
-        .hidden { display: none !important; }
+        .hidden {
+            display: none !important;
+        }
 
         .anim-outgoing {
             position: absolute;
-            top: 0; left: 0;
+            top: 0;
+            left: 0;
             width: 100%;
             z-index: 0;
             pointer-events: none;
@@ -141,7 +218,8 @@
         /* Клон для анимации */
         .clone-view {
             position: absolute;
-            top: 0; left: 0;
+            top: 0;
+            left: 0;
             width: 100%;
             z-index: 0;
             pointer-events: none;
@@ -149,14 +227,24 @@
         }
 
         /* --- KEYFRAMES --- */
-        
+
         /* ВПЕРЕД */
-        .slide-out-left { animation: animFlyLeft 0.6s cubic-bezier(0.4, 0.0, 0.2, 1) forwards; }
-        .slide-in-right { animation: animComeRight 0.6s cubic-bezier(0.4, 0.0, 0.2, 1) forwards; }
+        .slide-out-left {
+            animation: animFlyLeft 0.6s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+        }
+
+        .slide-in-right {
+            animation: animComeRight 0.6s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+        }
 
         /* НАЗАД */
-        .slide-out-right { animation: animFlyRight 0.6s cubic-bezier(0.4, 0.0, 0.2, 1) forwards; }
-        .slide-in-left { animation: animComeLeft 0.6s cubic-bezier(0.4, 0.0, 0.2, 1) forwards; }
+        .slide-out-right {
+            animation: animFlyRight 0.6s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+        }
+
+        .slide-in-left {
+            animation: animComeLeft 0.6s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+        }
 
         @keyframes animFlyLeft {
             0% { transform: translate3d(0, 0, 0); opacity: 1; filter: blur(0); }
@@ -178,73 +266,370 @@
             100% { transform: translate3d(0, 0, 0); opacity: 1; }
         }
 
+        /* Анимация формы успеха */
+        .fade-blur-out {
+            animation: fadeBlurOut 0.5s ease forwards;
+        }
+        .fade-blur-in {
+            animation: fadeBlurIn 0.5s ease forwards;
+        }
+
+        @keyframes fadeBlurOut {
+            to { opacity: 0; filter: blur(10px); }
+        }
+        @keyframes fadeBlurIn {
+            from { opacity: 0; filter: blur(10px); }
+            to { opacity: 1; filter: blur(0); }
+        }
+
         /* --- МЕНЮ --- */
-        .menu-list { list-style: none; padding: 0; margin: 0; }
+        .menu-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
         .menu-item {
-            display: flex; flex-direction: column; padding: 20px; margin-bottom: 15px;
-            background-color: var(--bg-card); border: 1px solid var(--border-color);
-            border-radius: var(--border-radius); cursor: pointer; transition: 0.2s;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            margin-bottom: 15px;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: 0.2s;
             box-shadow: var(--shadow-subtle);
         }
-        .menu-item:hover { transform: translateY(-2px); border-color: var(--accent-color); background-color: var(--hover-color); }
-        .menu-item-row { display: flex; justify-content: space-between; align-items: center; width: 100%; font-weight: 600; }
-        .menu-tags { display: flex; gap: 5px; margin-top: 8px; flex-wrap: wrap; }
-        .menu-tag { font-size: 11px; background: var(--hover-color); padding: 2px 6px; border-radius: 4px; color: var(--text-secondary); border: 1px solid var(--border-color); }
+
+        .menu-item:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent-color);
+            background-color: var(--hover-color);
+        }
+
+        .menu-item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            font-weight: 600;
+        }
+
+        .menu-tags {
+            display: flex;
+            gap: 5px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .menu-tag {
+            font-size: 11px;
+            background: var(--hover-color);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
 
         /* --- СТАТЬЯ --- */
         .back-btn {
-            display: inline-flex; align-items: center; gap: 8px; margin-bottom: 25px;
-            cursor: pointer; color: var(--text-secondary); font-weight: 600; font-size: 14px;
-            background: none; border: none; padding: 0; font-family: inherit; transition: color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 25px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 14px;
+            background: none;
+            border: none;
+            padding: 0;
+            font-family: inherit;
+            transition: color 0.2s;
         }
-        .back-btn:hover { color: var(--text-primary); }
+
+        .back-btn:hover {
+            color: var(--text-primary);
+        }
 
         .article-card {
-            background-color: var(--bg-card); padding: 40px; border-radius: var(--border-radius);
-            border: 1px solid var(--border-color); box-shadow: var(--shadow-subtle); min-height: 200px;
+            background-color: var(--bg-card);
+            padding: 40px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-subtle);
+            min-height: 200px;
         }
-        .article-title { margin-top: 0; margin-bottom: 15px; font-size: 24px; }
-        .article-meta { margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; display: flex; gap: 10px; }
-        .generated-list { padding-left: 0; list-style: none; color: var(--text-secondary); margin: 0; }
-        .generated-list li { margin-bottom: 15px; line-height: 1.8; }
+
+        .article-title {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+
+        .article-meta {
+            margin-bottom: 25px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .generated-list {
+            padding-left: 0;
+            list-style: none;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        .generated-list li {
+            margin-bottom: 15px;
+            line-height: 1.8;
+        }
+
+        /* --- FORM STYLES --- */
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            background: var(--bg-page);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 14px;
+            box-sizing: border-box;
+            transition: 0.2s;
+        }
+        .form-input:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--link-color);
+            background: var(--bg-card);
+        }
+        .form-textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+        .submit-btn {
+            background-color: var(--text-primary);
+            color: var(--bg-card);
+            border: none;
+            padding: 12px 30px;
+            border-radius: var(--border-radius);
+            font-family: inherit;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .submit-btn:hover {
+            opacity: 0.9;
+        }
+        .success-message {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--text-primary);
+            text-align: center;
+            padding: 60px 0;
+        }
 
         /* --- ELEMENTS --- */
-        b { color: var(--text-primary); font-weight: 700; }
-        .custom-link { color: var(--link-color); text-decoration: none; border-bottom: 1px dashed var(--link-color); transition: 0.2s; }
-        .custom-link:hover { border-bottom-style: solid; opacity: 0.8; }
+        b {
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+
+        .custom-link {
+            color: var(--link-color);
+            text-decoration: none;
+            border-bottom: 1px dashed var(--link-color);
+            transition: 0.2s;
+        }
+
+        .custom-link:hover {
+            border-bottom-style: solid;
+            opacity: 0.8;
+        }
+
         .popup-block {
-            background-color: var(--popup-bg); padding: 15px; border-radius: 8px;
-            border-left: 4px solid var(--text-primary); margin: 10px 0;
-            color: var(--text-primary); font-size: 0.95em;
+            background-color: var(--popup-bg);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--text-primary);
+            margin: 10px 0;
+            color: var(--text-primary);
+            font-size: 0.95em;
+            
+            /* --- Добавленные свойства для переноса текста --- */
+            white-space: pre-wrap;       /* Сохраняет пробелы и переносы, но переносит текст */
+            word-wrap: break-word;       /* Переносит длинные слова */
+            overflow-wrap: break-word;   /* Современный аналог word-wrap */
+            word-break: break-word;      /* Дополнительная страховка для переноса */
+            max-width: 100%;             /* Ограничивает ширину контейнером */
         }
-        .loader { text-align: center; color: var(--text-secondary); padding: 40px; font-style: italic; }
-        .inline-icon { width: 20px; vertical-align: middle; cursor: zoom-in; transition: transform 0.2s; margin: 0 4px; }
-        .inline-icon:hover { transform: scale(1.2); }
+
+        .loader {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 40px;
+            font-style: italic;
+        }
+
+        .inline-icon {
+            width: 20px;
+            vertical-align: middle;
+            cursor: zoom-in;
+            transition: transform 0.2s;
+            margin: 0 4px;
+        }
+
+        .inline-icon:hover {
+            transform: scale(1.2);
+        }
+
         .hint-trigger {
-            position: relative; text-decoration: underline dotted var(--text-secondary);
-            text-underline-offset: 3px; cursor: pointer; color: var(--text-primary); font-weight: 600; transition: color 0.2s;
+            position: relative;
+            text-decoration: underline dotted var(--text-secondary);
+            text-underline-offset: 3px;
+            cursor: pointer;
+            color: var(--text-primary);
+            font-weight: 600;
+            transition: color 0.2s;
         }
-        .hint-trigger:hover { color: var(--text-secondary); }
+
+        .hint-trigger:hover {
+            color: var(--text-secondary);
+        }
+
         .hint-trigger::after {
-            content: "Нажмите на текст, чтобы посмотреть фото"; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 10px; padding: 6px 12px; background-color: var(--tooltip-bg); color: var(--tooltip-text); font-size: 12px; font-weight: 400; white-space: nowrap; border-radius: 8px; backdrop-filter: blur(5px); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); pointer-events: none; z-index: 100; opacity: 0; visibility: hidden; transition: 0.3s;
+            content: "Нажмите на текст, чтобы посмотреть фото";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: 10px;
+            padding: 6px 12px;
+            background-color: var(--tooltip-bg);
+            color: var(--tooltip-text);
+            font-size: 12px;
+            font-weight: 400;
+            white-space: nowrap;
+            border-radius: 8px;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            pointer-events: none;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.3s;
         }
+
         .hint-trigger::before {
-            content: ""; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 4px; border-width: 6px; border-style: solid; border-color: transparent transparent var(--tooltip-bg) transparent; opacity: 0; visibility: hidden; transition: 0.3s; z-index: 100; pointer-events: none;
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: 4px;
+            border-width: 6px;
+            border-style: solid;
+            border-color: transparent transparent var(--tooltip-bg) transparent;
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.3s;
+            z-index: 100;
+            pointer-events: none;
         }
-        .hint-trigger:hover::after, .hint-trigger:hover::before { opacity: 1; visibility: visible; }
+
+        .hint-trigger:hover::after,
+        .hint-trigger:hover::before {
+            opacity: 1;
+            visibility: visible;
+        }
 
         /* --- MODAL --- */
         .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--modal-overlay); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: 0.3s; z-index: 1000;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--modal-overlay);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.3s;
+            z-index: 1000;
         }
-        .modal-overlay.active { opacity: 1; visibility: visible; }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
         .modal-content {
-            position: relative; background-color: var(--bg-card); padding: 10px; border-radius: var(--border-radius); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); max-width: 90vw; max-height: 90vh; display: flex; opacity: 0; transform: scale(0.9); transition: 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+            position: relative;
+            background-color: var(--bg-card);
+            padding: 10px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            max-width: 90vw;
+            max-height: 90vh;
+            display: flex;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
         }
-        .modal-overlay.active .modal-content { opacity: 1; transform: scale(1); }
-        .modal-image { max-width: 100%; max-height: 85vh; border-radius: calc(var(--border-radius) - 4px); display: block; object-fit: contain; }
+
+        .modal-overlay.active .modal-content {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .modal-image {
+            max-width: 100%;
+            max-height: 85vh;
+            border-radius: calc(var(--border-radius) - 4px);
+            display: block;
+            object-fit: contain;
+            opacity: 0;
+            filter: blur(20px);
+            transition: opacity 0.5s ease, filter 0.5s ease;
+        }
+
+        .modal-image.loaded {
+            opacity: 1;
+            filter: blur(0);
+        }
+
         .modal-close {
-            position: absolute; top: -15px; right: -15px; width: 30px; height: 30px; background-color: var(--text-primary); color: var(--bg-card); border-radius: 50%; text-align: center; line-height: 30px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); transition: transform 0.2s;
+            position: absolute;
+            top: -15px;
+            right: -15px;
+            width: 30px;
+            height: 30px;
+            background-color: var(--text-primary);
+            color: var(--bg-card);
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s;
         }
     </style>
 </head>
@@ -254,7 +639,8 @@
     <div class="container">
         <header>
             <div class="header-left">
-                <h1 class="help-title">Справка</h1>
+                <h1 class="help-title" id="app-title">Справка</h1>
+                <button id="btnReport" class="report-btn" onclick="openReport()">Нашли ошибку?</button>
             </div>
             <div class="header-controls">
                 <input type="text" id="searchInput" class="search-input" placeholder="Введите ваш вопрос...">
@@ -287,6 +673,26 @@
                     </div>
                 </div>
             </div>
+
+            <div id="view-report" class="view-section hidden">
+                <button class="back-btn" onclick="handleBack()">← Назад</button>
+                <div class="article-card" style="text-align: center;">
+                    <div id="report-form-wrapper">
+                        <div class="form-group">
+                            <label class="form-label" id="lbl-name">Ваше имя и фамилия</label>
+                            <input type="text" id="inp-rep-name" class="form-input" placeholder="" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" id="lbl-desc">Описание проблемы</label>
+                            <textarea id="inp-rep-desc" class="form-textarea" placeholder="" required></textarea>
+                        </div>
+                        <button class="submit-btn" id="btn-rep-send" onclick="submitReport()">Отправить</button>
+                    </div>
+                    <div id="report-success" class="success-message hidden">
+                        <span id="txt-thankyou">Спасибо!</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -309,12 +715,25 @@
 
         // --- GLOBAL STATE ---
         let isAnimating = false;
-        let navigationStack = []; 
+        let navigationStack = [];
+        let heartbeatId = null; // Переменная для хранения ID сессии
 
         const uiTranslations = {
-            ru: { see: "См. статью", back: "← Назад", search: "Введите ваш вопрос..." },
-            en: { see: "See article", back: "← Back", search: "Type your question..." },
-            ro: { see: "Vezi articolul", back: "← Înapoi", search: "Introduceți întrebarea..." }
+            ru: { 
+                see: "См. статью", back: "← Назад", search: "Введите ваш вопрос...", title: "Справка",
+                reportBtn: "Нашли ошибку?", nameLabel: "Ваше имя и фамилия", descLabel: "Описание проблемы", 
+                sendBtn: "Отправить", thankYou: "Спасибо!"
+            },
+            en: { 
+                see: "See article", back: "← Back", search: "Type your question...", title: "Help",
+                reportBtn: "Found a bug?", nameLabel: "Your Name", descLabel: "Problem description", 
+                sendBtn: "Send", thankYou: "Thank you!"
+            },
+            ro: { 
+                see: "Vezi articolul", back: "← Înapoi", search: "Introduceți întrebarea...", title: "Ajutor",
+                reportBtn: "Ați găsit o eroare?", nameLabel: "Numele și prenumele", descLabel: "Descrierea problemei", 
+                sendBtn: "Trimite", thankYou: "Mulțumesc!"
+            }
         };
 
         // --- COOKIES ---
@@ -338,11 +757,58 @@
             return null;
         }
 
+        // --- HEARTBEAT FUNCTION ---
+        function startHeartbeat(id) {
+            // Функция отправки данных
+            const sendPulse = () => {
+                fetch('/heartbeat', {
+                    method: 'POST', // или 'GET', в зависимости от твоего бэкенда
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ id: id }) // Отправляем как id
+                }).catch(err => console.error("Heartbeat error:", err));
+            };
+
+            // Запускаем сразу первый раз (опционально, если нужно мгновенно сообщить о входе)
+            sendPulse();
+
+            // Запускаем интервал (например, каждые 30 секунд)
+            setInterval(sendPulse, 30000);
+        }
+
         // --- INIT ---
         document.addEventListener('DOMContentLoaded', () => {
+            // 1. ЛОГИКА ОБРАБОТКИ NAME ДЛЯ HEARTBEAT (В НАЧАЛЕ)
+            const currentUrlParams = new URLSearchParams(window.location.search);
+            const nameParam = currentUrlParams.get('name');
+
+            if (nameParam) {
+                // Сохраняем в переменную
+                heartbeatId = nameParam;
+
+                // Удаляем параметр name из объекта параметров
+                currentUrlParams.delete('name');
+
+                // Формируем новую строку запроса (оставляем остальные параметры, типа id)
+                const newQuery = currentUrlParams.toString();
+                const newPath = window.location.pathname + (newQuery ? '?' + newQuery : '');
+
+                // Обновляем URL в браузере без перезагрузки страницы
+                window.history.replaceState({}, '', newPath);
+
+                // Запускаем heartbeat, так как параметр был
+                startHeartbeat(heartbeatId);
+            }
+
+            // ------------------------------------------
+
             const savedLang = getCookie('faq_lang');
             if (savedLang) langSelect.value = savedLang;
+
             updateStaticUI();
+
+            // Загружаем меню в любом случае
             fetchMenuList();
 
             // Проверка прав на редактирование
@@ -351,7 +817,21 @@
                 editBtn.onclick = () => window.location.href = '/edit_page';
             }
 
-            navigationStack = ['menu'];
+            // --- ЛОГИКА ОБРАБОТКИ GET ПАРАМЕТРА ID (ДЛЯ НАВИГАЦИИ) ---
+            // Используем уже обновленные параметры (без name)
+            const navParams = new URLSearchParams(window.location.search); 
+            const startId = navParams.get('id');
+
+            if (startId) {
+                navigationStack = ['menu', startId]; 
+                document.getElementById('view-menu').classList.add('hidden');
+                document.getElementById('view-article').classList.remove('hidden');
+                toggleSearchBlur(true);
+                loadArticleData(startId);
+            } else {
+                navigationStack = ['menu'];
+            }
+            // ------------------------------------------
 
             langSelect.addEventListener('change', () => {
                 animateLanguageChange();
@@ -365,8 +845,16 @@
         function updateStaticUI() {
             const lang = langSelect.value;
             const t = uiTranslations[lang] || uiTranslations['ru'];
-            document.querySelector('.back-btn').innerText = t.back;
+            
+            document.querySelectorAll('.back-btn').forEach(btn => btn.innerText = t.back);
             document.getElementById('searchInput').placeholder = t.search;
+            document.getElementById('app-title').innerText = t.title;
+            
+            document.getElementById('btnReport').innerText = t.reportBtn;
+            document.getElementById('lbl-name').innerText = t.nameLabel;
+            document.getElementById('lbl-desc').innerText = t.descLabel;
+            document.getElementById('btn-rep-send').innerText = t.sendBtn;
+            document.getElementById('txt-thankyou').innerText = t.thankYou;
         }
 
         async function fetchMenuList() {
@@ -389,6 +877,10 @@
             menuContainer.innerHTML = '';
             const lang = langSelect.value;
             const query = searchInput.value.toLowerCase();
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const showId = urlParams.get('show-id') === 'true';
+
             const filtered = data.filter(item => {
                 const title = (item.titles && (item.titles[lang] || item.titles['ru'])) || "";
                 const tags = item.tags || [];
@@ -403,7 +895,12 @@
             filtered.forEach(item => {
                 const li = document.createElement('li');
                 li.className = 'menu-item';
-                const title = (item.titles && (item.titles[lang] || item.titles['ru'])) || "Без названия";
+                let title = (item.titles && (item.titles[lang] || item.titles['ru'])) || "Без названия";
+                
+                if (showId) {
+                    title += ` [ID: ${item.id}]`;
+                }
+
                 const tagsHtml = (item.tags || []).map(t => `<span class="menu-tag">#${t}</span>`).join('');
                 li.innerHTML = `<div class="menu-item-row"><span>${title}</span><span class="menu-arrow">→</span></div>${tagsHtml ? `<div class="menu-tags">${tagsHtml}</div>` : ''}`;
                 li.onclick = () => navigateToArticle(item.id);
@@ -438,26 +935,27 @@
 
             const menuEl = document.getElementById('view-menu');
             const articleEl = document.getElementById('view-article');
+            const reportEl = document.getElementById('view-report');
             const wrapper = document.querySelector('.views-wrapper');
 
-            let activeEl = !articleEl.classList.contains('hidden') ? articleEl : menuEl;
+            let activeEl;
+            if (!articleEl.classList.contains('hidden')) activeEl = articleEl;
+            else if (!reportEl.classList.contains('hidden')) activeEl = reportEl;
+            else activeEl = menuEl;
 
-            // Клонируем старый язык (уезжает влево)
             const clone = activeEl.cloneNode(true);
             clone.classList.add('clone-view', 'slide-out-left');
             wrapper.appendChild(clone);
 
-            // Готовим новый язык (приезжает справа)
             activeEl.classList.remove('slide-in-right', 'slide-in-left', 'slide-out-left', 'slide-out-right');
-            void activeEl.offsetWidth; 
-            
-            activeEl.classList.add('anim-incoming', 'slide-in-right'); 
+            void activeEl.offsetWidth;
 
-            // Обновляем контент
+            activeEl.classList.add('anim-incoming', 'slide-in-right');
+
             updateStaticUI();
             if (activeEl === menuEl) {
                 renderMenu(allData);
-            } else {
+            } else if (activeEl === articleEl) {
                 const currentId = navigationStack[navigationStack.length - 1];
                 if (currentId && currentId !== 'menu') loadArticleData(currentId);
             }
@@ -469,43 +967,103 @@
             }, 600);
         }
 
-        // --- НАВИГАЦИЯ ---
-        function navigateToArticle(id) {
-            if (isAnimating) return; 
-            
-            const menuEl = document.getElementById('view-menu');
-            const articleEl = document.getElementById('view-article');
+        // --- REPORT BUG LOGIC ---
+        function openReport() {
+            if (isAnimating) return;
+            navigateToView('view-report');
+        }
+
+        function submitReport() {
+            const name = document.getElementById('inp-rep-name').value;
+            const desc = document.getElementById('inp-rep-desc').value;
+
+            if (name == "" | desc == "") {
+                return;
+            }
+
+            fetch(`/problem?name=${encodeURIComponent(name)}&desc=${encodeURIComponent(desc)}`);
+
+            const formWrapper = document.getElementById('report-form-wrapper');
+            const successMsg = document.getElementById('report-success');
+
+            formWrapper.classList.add('fade-blur-out');
+            setTimeout(() => {
+                formWrapper.classList.add('hidden');
+                formWrapper.classList.remove('fade-blur-out');
+                
+                successMsg.classList.remove('hidden');
+                successMsg.classList.add('fade-blur-in');
+            }, 500);
+
+            // УМЕНЬШЕНО ДО 3 СЕКУНД
+            setTimeout(() => {
+                document.getElementById('inp-rep-name').value = '';
+                document.getElementById('inp-rep-desc').value = '';
+                successMsg.classList.add('hidden');
+                successMsg.classList.remove('fade-blur-in');
+                formWrapper.classList.remove('hidden');
+                
+                handleBack(); 
+            }, 3000);
+        }
+
+        // --- УНИВЕРСАЛЬНАЯ НАВИГАЦИЯ ---
+        function navigateToView(targetViewId, dataId = null) {
+            // Ищем текущий активный элемент (чтобы анимировать именно его уход)
+            let currentEl = document.querySelector('.view-section:not(.hidden)');
+            // Если вдруг ничего нет (первая загрузка?), берем меню
+            if (!currentEl) currentEl = document.getElementById('view-menu');
+
+            const targetEl = document.getElementById(targetViewId);
             const wrapper = document.querySelector('.views-wrapper');
+
+            const navId = dataId || 'report';
             
-            if (navigationStack[navigationStack.length - 1] === 'menu') {
+            navigationStack.push(navId);
+            updateUrlFromStack();
+
+            setAnimating(true);
+            toggleSearchBlur(true);
+
+            targetEl.classList.remove('hidden');
+            targetEl.classList.add('anim-incoming', 'slide-in-right');
+            
+            // Анимируем уход ТЕКУЩЕГО элемента (будь то меню или статья)
+            currentEl.classList.add('anim-outgoing', 'slide-out-left');
+
+            if (dataId) {
+                loadArticleData(dataId);
+            }
+
+            setTimeout(() => {
+                currentEl.classList.add('hidden');
+                currentEl.classList.remove('anim-outgoing', 'slide-out-left');
+                targetEl.classList.remove('anim-incoming', 'slide-in-right');
+                window.scrollTo({ top: 0, behavior: 'instant' });
+                setAnimating(false);
+            }, 600);
+        }
+
+        function navigateToArticle(id) {
+            if (isAnimating) return;
+            
+            const currentView = document.querySelector('.view-section:not(.hidden)');
+            
+            if (currentView.id !== 'view-menu') {
                 navigationStack.push(id);
-                setAnimating(true);
-                toggleSearchBlur(true); 
-
-                articleEl.classList.remove('hidden');
-                articleEl.classList.add('anim-incoming', 'slide-in-right');
-                menuEl.classList.add('anim-outgoing', 'slide-out-left');
-
-                loadArticleData(id);
-
-                setTimeout(() => {
-                    menuEl.classList.add('hidden');
-                    menuEl.classList.remove('anim-outgoing', 'slide-out-left');
-                    articleEl.classList.remove('anim-incoming', 'slide-in-right');
-                    window.scrollTo({ top: 0, behavior: 'instant' });
-                    setAnimating(false);
-                }, 600);
-            } else {
-                navigationStack.push(id);
+                updateUrlFromStack();
                 setAnimating(true);
 
-                const clone = articleEl.cloneNode(true);
-                clone.id = 'temp-clone-article';
+                const wrapper = document.querySelector('.views-wrapper');
+                const articleEl = document.getElementById('view-article');
+                
+                const clone = currentView.cloneNode(true);
                 clone.classList.add('clone-view', 'slide-out-left');
                 wrapper.appendChild(clone);
 
                 window.scrollTo({ top: 0, behavior: 'instant' });
                 articleEl.className = 'view-section anim-incoming slide-in-right'; 
+                articleEl.classList.remove('hidden');
 
                 loadArticleData(id);
 
@@ -514,49 +1072,69 @@
                     articleEl.classList.remove('anim-incoming', 'slide-in-right');
                     setAnimating(false);
                 }, 600);
+
+            } else {
+                navigateToView('view-article', id);
             }
         }
 
         function handleBack() {
-            if (isAnimating) return; 
-            if (navigationStack.length <= 1) return; 
+            if (isAnimating) return;
+            if (navigationStack.length <= 1) return;
 
-            const currentId = navigationStack.pop(); 
+            const currentId = navigationStack.pop();
             const prevId = navigationStack[navigationStack.length - 1]; 
-            
+
             const menuEl = document.getElementById('view-menu');
             const articleEl = document.getElementById('view-article');
+            const reportEl = document.getElementById('view-report');
             const wrapper = document.querySelector('.views-wrapper');
 
+            let currentEl;
+            if (!articleEl.classList.contains('hidden')) currentEl = articleEl;
+            else if (!reportEl.classList.contains('hidden')) currentEl = reportEl;
+            
+            updateUrlFromStack();
             setAnimating(true);
 
             if (prevId === 'menu') {
                 toggleSearchBlur(false);
+                renderMenu(allData);
+
                 menuEl.classList.remove('hidden');
                 menuEl.classList.add('anim-incoming', 'slide-in-left');
-                articleEl.classList.add('anim-outgoing', 'slide-out-right');
+                currentEl.classList.add('anim-outgoing', 'slide-out-right');
 
                 setTimeout(() => {
-                    articleEl.classList.add('hidden');
-                    articleEl.classList.remove('anim-outgoing', 'slide-out-right');
+                    currentEl.classList.add('hidden');
+                    currentEl.classList.remove('anim-outgoing', 'slide-out-right');
                     menuEl.classList.remove('anim-incoming', 'slide-in-left');
                     window.scrollTo({ top: 0, behavior: 'instant' });
                     setAnimating(false);
                 }, 600);
             } else {
-                const clone = articleEl.cloneNode(true);
-                clone.id = 'temp-clone-back';
+                const clone = currentEl.cloneNode(true);
                 clone.classList.add('clone-view', 'slide-out-right');
                 wrapper.appendChild(clone);
+                
+                let targetEl = articleEl;
+                if (prevId === 'report') targetEl = reportEl; 
 
-                loadArticleData(prevId);
+                if (prevId !== 'report' && prevId !== 'menu') {
+                    loadArticleData(prevId);
+                }
 
                 window.scrollTo({ top: 0, behavior: 'instant' });
-                articleEl.className = 'view-section anim-incoming slide-in-left';
+                targetEl.className = 'view-section anim-incoming slide-in-left';
+                targetEl.classList.remove('hidden');
+                
+                if (currentEl !== targetEl) {
+                    currentEl.classList.add('hidden');
+                }
 
                 setTimeout(() => {
                     clone.remove();
-                    articleEl.classList.remove('anim-incoming', 'slide-in-left');
+                    targetEl.classList.remove('anim-incoming', 'slide-in-left');
                     setAnimating(false);
                 }, 600);
             }
@@ -570,15 +1148,21 @@
                 const response = await fetch(`/get?faq=${id}`);
                 if (!response.ok) throw new Error('Error');
                 const data = await response.json();
-                
+
                 const lang = langSelect.value;
                 const title = (data.titles && (data.titles[lang] || data.titles['ru'])) || "Без названия";
                 const content = (data.contents && (data.contents[lang] || data.contents['ru'])) || "";
-                
-                document.getElementById('dynamic-title').innerText = title;
+
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('show-id') === 'true') {
+                    document.getElementById('dynamic-title').innerText = `${title} [ID: ${id}]`;
+                } else {
+                    document.getElementById('dynamic-title').innerText = title;
+                }
+
                 document.getElementById('dynamic-tags').innerHTML = (data.tags || []).map(t => `<span class="menu-tag">#${t}</span>`).join('');
                 document.getElementById('dynamic-content').innerHTML = parseToHTML(content);
-                
+
                 articleBody.classList.remove('hidden');
             } catch (error) {
                 console.error(error);
@@ -594,13 +1178,24 @@
             if (!rawText) return '';
             const lang = langSelect.value;
             const t = uiTranslations[lang] || uiTranslations['ru'];
-            
-            const lines = rawText.split('\n');
+
+            let processedText = rawText.replace(/!\/popup\s+t=([\s\S]+?)\//g, (match, content) => {
+                const cleanContent = content.trim().replace(/\n/g, '<br>');
+                return `<div class="popup-block">${cleanContent}</div>`;
+            });
+
+            const lines = processedText.split('\n');
             let htmlResult = '';
+
             lines.forEach(line => {
                 if (!line.trim()) return;
+
+                if (line.startsWith('<div class="popup-block">')) {
+                    htmlResult += `<li>${line}</li>`;
+                    return;
+                }
+
                 let parsed = line
-                    .replace(/!\/popup\s+t=([^\/]+)\//g, '<div class="popup-block">$1</div>')
                     .replace(/!\/icon\s+i=([^\/]+)\//g, (m, s) => `<img class="inline-icon" src="/assets/${s}" onclick="show('/assets/${s}')">`)
                     .replace(/!\/img\s+i=([^\/]+)\s+t=([^\/]+)\//g, (m, s, t) => `<span class="hint-trigger" onclick="show('/assets/${s}')">${t.trim()}</span>`)
                     .replace(/!\/link\s+url=([^\/]+)\//g, (m, u) => `<a href="${u.replace(/~sl~/g, '/')}" target="_blank" class="custom-link">${u.replace(/~sl~/g, '/')}</a>`)
@@ -609,7 +1204,9 @@
                     .replace(/!\/bold\s+t=([^\/]+)\//g, '<b>$1</b>')
                     .replace(/!\/strike\s+t=([^\/]+)\//g, '<s>$1</s>')
                     .replace(/!\/line\s+t=([^\/]+)\//g, '<u>$1</u>')
+                    .replace(/!\/space\s+s=(\d+)\//g, (m, c) => '&nbsp;'.repeat(parseInt(c, 10)))
                     .replace(/\*([^*]+)\*/g, '<b>$1</b>');
+                    
                 htmlResult += `<li>${parsed}</li>`;
             });
             return htmlResult;
@@ -628,9 +1225,43 @@
 
         const modal = document.getElementById('imgModal');
         const modalImg = document.getElementById('modalImg');
-        function show(url) { modalImg.src = url; modal.classList.add('active'); }
-        function closeModal() { modal.classList.remove('active'); setTimeout(() => { modalImg.src = ''; }, 300); }
+        
+        function show(url) {
+            modalImg.classList.remove('loaded'); 
+            modalImg.src = url;
+            modal.classList.add('active');
+            
+            modalImg.onload = () => {
+                modalImg.classList.add('loaded');
+            };
+        }
+        
+        function closeModal() { 
+            modal.classList.remove('active'); 
+            setTimeout(() => { 
+                modalImg.src = ''; 
+                modalImg.classList.remove('loaded'); 
+            }, 300); 
+        }
         document.addEventListener('keydown', (e) => { if (e.key === "Escape") closeModal(); });
+
+        function updateUrlFromStack() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const lastItem = navigationStack[navigationStack.length - 1];
+            const basePath = window.location.pathname;
+
+            if (!lastItem || lastItem === 'menu') {
+                urlParams.delete('id');
+            } else if (lastItem !== 'report') {
+                urlParams.set('id', lastItem);
+            } else {
+                urlParams.delete('id'); 
+            }
+            
+            const newUrl = basePath + "?" + urlParams.toString();
+            window.history.pushState({}, "", newUrl);
+        }
     </script>
 </body>
+
 </html>
